@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>3D Flappy Bird</title>
+    <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/aframe-extras/6.1.1/aframe-extras.min.js"></script>
+  </head>
+  <body>
+    <a-scene>
+      <a-sky color="#87CEEB"></a-sky>
+      <a-plane position="0 -1 0" rotation="-90 0 0" width="100" height="100" color="#7CFC00"></a-plane>
+
+      <a-sphere id="bird" position="0 1 -5" radius="0.5" color="yellow"></a-sphere>
+
+      <a-box id="pipe-top" position="2 4 -5" width="1" height="4" depth="1" color="green"></a-box>
+      <a-box id="pipe-bottom" position="2 -2 -5" width="1" height="4" depth="1" color="green"></a-box>
+
+      <a-entity camera look-controls wasd-controls position="0 1.6 0"></a-entity>
+    </a-scene>
+
+    <script>
+      document.addEventListener('keydown', function (event) {
+        const bird = document.getElementById('bird');
+        if (event.code === 'Space') {
+          bird.object3D.position.y += 0.3;
+        }
+      });
+
+      function movePipes() {
+        const pipeTop = document.getElementById('pipe-top');
+        const pipeBottom = document.getElementById('pipe-bottom');
+
+        setInterval(() => {
+          pipeTop.object3D.position.z += 0.05;
+          pipeBottom.object3D.position.z += 0.05;
+
+          if (pipeTop.object3D.position.z > 0) {
+            pipeTop.object3D.position.z = -10;
+            pipeBottom.object3D.position.z = -10;
+
+          }
+        }, 50);
+      }
+
+      movePipes();
+    </script>
+  </body>
+</html>
