@@ -4,8 +4,23 @@
   <meta charset="UTF-8">
   <title>2D Flappy Bird</title>
   <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
+  <style>
+    #retryMessageContainer {
+      position: absolute;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background-color: rgba(0, 0, 0, 0.7);
+      color: white;
+      padding: 10px;
+      border-radius: 5px;
+      font-size: 20px;
+      display: none;
+    }
+  </style>
 </head>
 <body>
+  <div id="retryMessageContainer">Press R to retry</div>
   <a-scene>
     <!-- A-Frame Entities -->
     <a-plane position="0 0 -5" rotation="-90 0 0" width="10" height="10" color="#87CEEB"></a-plane>
@@ -18,8 +33,10 @@
     <a-plane id="pipeBottom" position="3 -1.5 -5" width="0.5" height="1" color="green"></a-plane>
     <a-entity id="camera" camera position="0 0 0"></a-entity>
     
-    <!-- Retry Message -->
-    <a-text id="retryMessage" value="Press R to retry" color="white" align="center" position="0 1.5 -5" visible="false"></a-text>
+    <!-- Score Counter -->
+    <a-plane position="0 2.8 -4.9" width="2" height="0.5" color="black">
+      <a-text id="scoreCounter" value="Score: 0" color="white" align="center" position="0 0 0.01"></a-text>
+    </a-plane>
   </a-scene>
 
   <script>
@@ -31,6 +48,7 @@
 
     let birdVelocity = 0;
     let gameRunning = true;
+    let score = 0;
 
     // Bird jump on space key press
     document.addEventListener('keydown', function(event) {
@@ -50,6 +68,7 @@
       moveBird();
       movePipes();
       checkCollision();
+      updateScore();
       requestAnimationFrame(gameLoop);
     }
 
@@ -76,6 +95,7 @@
 
       if (pipeTopPosition.x < -5) {
         resetPipes(pipeTop, pipeBottom);
+        incrementScore();
       }
 
       pipeTop.setAttribute('position', pipeTopPosition);
@@ -116,13 +136,24 @@
       }
     }
 
+    // Update score counter
+    function updateScore() {
+      const scoreCounter = document.getElementById('scoreCounter');
+      scoreCounter.setAttribute('value', 'Score: ' + score);
+    }
+
+    // Increment score
+    function incrementScore() {
+      score += 1;
+    }
+
     // Function to end the game
     function endGame() {
       gameRunning = false;
       console.log('Game Over!');
 
       // Show retry message
-      document.getElementById('retryMessage').setAttribute('visible', 'true');
+      document.getElementById('retryMessageContainer').style.display = 'block';
     }
 
     // Function to reset the game
@@ -132,9 +163,11 @@
 
       gameRunning = true;
       birdVelocity = 0;
+      score = 0;
+      updateScore();
 
       // Hide retry message
-      document.getElementById('retryMessage').setAttribute('visible', 'false');
+      document.getElementById('retryMessageContainer').style.display = 'none';
 
       // Start the game loop after a short delay
       setTimeout(function() {
