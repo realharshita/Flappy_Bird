@@ -7,24 +7,19 @@
 </head>
 <body>
   <a-scene>
-    <!-- Background -->
+    <!-- A-Frame Entities -->
     <a-plane position="0 0 -5" rotation="-90 0 0" width="10" height="10" color="#87CEEB"></a-plane>
-    
-    <!-- Roof -->
     <a-plane position="0 2.5 -5" rotation="0 0 0" width="10" height=".1" color="#555"></a-plane>
-    
-    <!-- Floor -->
     <a-plane position="0 -2.5 -5" rotation="0 0 0" width="10" height=".1" color="#555"></a-plane>
-    
-    <!-- Bird -->
+    <a-plane position="5 0 -5" rotation="0 0 90" width="5" height=".1" color="#555"></a-plane>
+    <a-plane position="-5 0 -5" rotation="0 0 90" width="5" height=".1" color="#555"></a-plane>
     <a-plane id="bird" position="-2 0 -5" width="0.5" height="0.5" color="yellow"></a-plane>
-    
-    <!-- Pipes -->
     <a-plane id="pipeTop" position="3 1.5 -5" width="0.5" height="1" color="green"></a-plane>
     <a-plane id="pipeBottom" position="3 -1.5 -5" width="0.5" height="1" color="green"></a-plane>
-    
-    <!-- Camera -->
     <a-entity id="camera" camera position="0 0 0"></a-entity>
+    
+    <!-- Retry Message -->
+    <a-text id="retryMessage" value="Press R to retry" color="white" align="center" position="0 1.5 -5" visible="false"></a-text>
   </a-scene>
 
   <script>
@@ -39,8 +34,12 @@
 
     // Bird jump on space key press
     document.addEventListener('keydown', function(event) {
-      if (event.code === 'j' && gameRunning) {
+      if (event.code === 'Space' && gameRunning) {
         birdVelocity = JUMP_STRENGTH;
+      }
+      // Restart game on 'R' key press
+      if (event.code === 'KeyR' && !gameRunning) {
+        resetGame();
       }
     });
 
@@ -122,11 +121,8 @@
       gameRunning = false;
       console.log('Game Over!');
 
-      // Prompt to retry
-      const retry = confirm('Game Over! Retry?');
-      if (retry) {
-        resetGame();
-      }
+      // Show retry message
+      document.getElementById('retryMessage').setAttribute('visible', 'true');
     }
 
     // Function to reset the game
@@ -136,10 +132,17 @@
 
       gameRunning = true;
       birdVelocity = 0;
-      gameLoop();
+
+      // Hide retry message
+      document.getElementById('retryMessage').setAttribute('visible', 'false');
+
+      // Start the game loop after a short delay
+      setTimeout(function() {
+        gameLoop();
+      }, 3000); // 3000 milliseconds = 3 seconds
     }
 
-    // Start the game loop
+    // Initialize game loop
     gameLoop();
   </script>
 </body>
