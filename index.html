@@ -1,49 +1,114 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <meta charset="UTF-8">
-    <title>3D Flappy Bird</title>
-    <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/aframe-extras/6.1.1/aframe-extras.min.js"></script>
-  </head>
-  <body>
-    <a-scene>
-      <a-sky color="#87CEEB"></a-sky>
-      <a-plane position="0 -1 0" rotation="-90 0 0" width="100" height="100" color="#7CFC00"></a-plane>
+<head>
+  <meta charset="UTF-8">
+  <title>2D Flappy Bird</title>
+  <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
+</head>
+<body>
+  <a-scene>
+    <!-- Background -->
+    <a-plane position="0 0 -5" rotation="-90 0 0" width="10" height="10" color="#87CEEB"></a-plane>
+    
+    <!-- Bird -->
+    <a-plane id="bird" position="-2 0 -5" width="0.5" height="0.5" color="yellow"></a-plane>
+    
+    <!-- Pipes -->
+    <a-plane id="pipeTop" position="3 2 -5" width="0.5" height="1" color="green"></a-plane>
+    <a-plane id="pipeBottom" position="3 -2 -5" width="0.5" height="1" color="green"></a-plane>
+    
+    <!-- Camera -->
+    <a-entity id="camera" camera position="0 0 0"></a-entity>
+  </a-scene>
 
-      <a-sphere id="bird" position="0 1 -5" radius="0.5" color="yellow"></a-sphere>
+  <script>
+    // Constants
+    const GRAVITY = -0.005;
+    const JUMP_STRENGTH = 0.1;
+    const PIPE_SPEED = 0.05;
+    const PIPE_GAP = 3; // Gap between top and bottom of pipes
 
-      <a-box id="pipe-top" position="2 4 -5" width="1" height="4" depth="1" color="green"></a-box>
-      <a-box id="pipe-bottom" position="2 -2 -5" width="1" height="4" depth="1" color="green"></a-box>
+    let birdVelocity = 0;
+    let gameRunning = true;
 
-      <a-entity camera look-controls wasd-controls position="0 1.6 0"></a-entity>
-    </a-scene>
+    // Bird jump on space key press
+    document.addEventListener('keydown', function(event) {
+      if (event.code === 'Space') {
+        birdVelocity = JUMP_STRENGTH;
+      }
+    });
 
-    <script>
-      document.addEventListener('keydown', function (event) {
-        const bird = document.getElementById('bird');
-        if (event.code === 'Space') {
-          bird.object3D.position.y += 0.3;
-        }
-      });
+    // Game loop
+    function gameLoop() {
+      if (!gameRunning) return;
 
-      function movePipes() {
-        const pipeTop = document.getElementById('pipe-top');
-        const pipeBottom = document.getElementById('pipe-bottom');
+      moveBird();
+      movePipes();
+      checkCollision();
+      requestAnimationFrame(gameLoop);
+    }
 
-        setInterval(() => {
-          pipeTop.object3D.position.z += 0.05;
-          pipeBottom.object3D.position.z += 0.05;
+    // Move the bird
+    function moveBird() {
+      const bird = document.getElementById('bird');
+      const birdPosition = bird.getAttribute('position');
 
-          if (pipeTop.object3D.position.z > 0) {
-            pipeTop.object3D.position.z = -10;
-            pipeBottom.object3D.position.z = -10;
+      birdVelocity += GRAVITY;
+      birdPosition.y += birdVelocity;
 
-          }
-        }, 50);
+      bird.setAttribute('position', birdPosition);
+    }
+
+    // Move the pipes
+    function movePipes() {
+      const pipeTop = document.getElementById('pipeTop');
+      const pipeBottom = document.getElementById('pipeBottom');
+      const pipeTopPosition = pipeTop.getAttribute('position');
+      const pipeBottomPosition = pipeBottom.getAttribute('position');
+
+      pipeTopPosition.x -= PIPE_SPEED;
+      pipeBottomPosition.x -= PIPE_SPEED;
+
+      if (pipeTopPosition.x < -5) {
+        resetPipes(pipeTop, pipeBottom);
       }
 
-      movePipes();
-    </script>
-  </body>
+      pipeTop.setAttribute('position', pipeTopPosition);
+      pipeBottom.setAttribute('position', pipeBottomPosition);
+    }
+
+    // Reset pipes to the right side with a gap
+    function resetPipes(pipeTop, pipeBottom) {
+      const randomY = (Math.random() * 3) - 1.5; // Adjust the range as needed
+      pipeTop.setAttribute('position', { x: 5, y: randomY, z: -5 });
+      pipeBottom.setAttribute('position', { x: 5, y: randomY - PIPE_GAP, z: -5 });
+    }
+
+    // Check collision with pipes or ground
+    function checkCollision() {
+      const bird = document.getElementById('bird');
+      const birdPosition = bird.getAttribute('position');
+      const pipeTop = document.getElementById('pipeTop');
+      const pipeBottom = document.getElementById('pipeBottom');
+      const pipeTopPosition = pipeTop.getAttribute('position');
+      const pipeBottomPosition = pipeBottom.getAttribute('position');
+
+      if (
+        birdPosition.x > pipeTopPosition.x - 0.25 && birdPosition.x < pipeTopPosition.x + 0.25 &&
+        (birdPosition.y > pipeTopPosition.y - 0.5 || birdPosition.y < pipeBottomPosition.y + 0.5)
+      ) {
+        gameRunning = false;
+        console.log('Game Over!');
+      }
+
+      if (birdPosition.y < -2 || birdPosition.y > 2) {
+        gameRunning = false;
+        console.log('Game Over!');
+      }
+    }
+
+    // Start the game loop
+    gameLoop();
+  </script>
+</body>
 </html>
