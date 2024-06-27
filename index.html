@@ -10,12 +10,18 @@
     <!-- Background -->
     <a-plane position="0 0 -5" rotation="-90 0 0" width="10" height="10" color="#87CEEB"></a-plane>
     
+    <!-- Roof -->
+    <a-plane position="0 2.5 -5" rotation="0 0 0" width="10" height=".1" color="#555"></a-plane>
+    
+    <!-- Floor -->
+    <a-plane position="0 -2.5 -5" rotation="0 0 0" width="10" height=".1" color="#555"></a-plane>
+    
     <!-- Bird -->
     <a-plane id="bird" position="-2 0 -5" width="0.5" height="0.5" color="yellow"></a-plane>
     
     <!-- Pipes -->
-    <a-plane id="pipeTop" position="3 2 -5" width="0.5" height="1" color="green"></a-plane>
-    <a-plane id="pipeBottom" position="3 -2 -5" width="0.5" height="1" color="green"></a-plane>
+    <a-plane id="pipeTop" position="3 1.5 -5" width="0.5" height="1" color="green"></a-plane>
+    <a-plane id="pipeBottom" position="3 -1.5 -5" width="0.5" height="1" color="green"></a-plane>
     
     <!-- Camera -->
     <a-entity id="camera" camera position="0 0 0"></a-entity>
@@ -33,7 +39,7 @@
 
     // Bird jump on space key press
     document.addEventListener('keydown', function(event) {
-      if (event.code === 'Space') {
+      if (event.code === 'j' && gameRunning) {
         birdVelocity = JUMP_STRENGTH;
       }
     });
@@ -79,12 +85,16 @@
 
     // Reset pipes to the right side with a gap
     function resetPipes(pipeTop, pipeBottom) {
-      const randomY = (Math.random() * 3) - 1.5; // Adjust the range as needed
+      const playableHeight = 5; // Distance between roof and floor (2.5 + 2.5)
+      const maxY = playableHeight / 2; // Maximum allowed Y position for top pipe
+      const minY = -maxY + PIPE_GAP; // Minimum allowed Y position for top pipe (considering gap)
+
+      const randomY = Math.random() * (maxY - minY) + minY; // Generate random Y within playable area
       pipeTop.setAttribute('position', { x: 5, y: randomY, z: -5 });
       pipeBottom.setAttribute('position', { x: 5, y: randomY - PIPE_GAP, z: -5 });
     }
 
-    // Check collision with pipes or ground
+    // Check collision with pipes, roof, or floor
     function checkCollision() {
       const bird = document.getElementById('bird');
       const birdPosition = bird.getAttribute('position');
@@ -93,18 +103,40 @@
       const pipeTopPosition = pipeTop.getAttribute('position');
       const pipeBottomPosition = pipeBottom.getAttribute('position');
 
+      // Check collision with pipes
       if (
         birdPosition.x > pipeTopPosition.x - 0.25 && birdPosition.x < pipeTopPosition.x + 0.25 &&
         (birdPosition.y > pipeTopPosition.y - 0.5 || birdPosition.y < pipeBottomPosition.y + 0.5)
       ) {
-        gameRunning = false;
-        console.log('Game Over!');
+        endGame();
       }
 
-      if (birdPosition.y < -2 || birdPosition.y > 2) {
-        gameRunning = false;
-        console.log('Game Over!');
+      // Check collision with roof or floor
+      if (birdPosition.y > 2.5 || birdPosition.y < -2.5) {
+        endGame();
       }
+    }
+
+    // Function to end the game
+    function endGame() {
+      gameRunning = false;
+      console.log('Game Over!');
+
+      // Prompt to retry
+      const retry = confirm('Game Over! Retry?');
+      if (retry) {
+        resetGame();
+      }
+    }
+
+    // Function to reset the game
+    function resetGame() {
+      const bird = document.getElementById('bird');
+      bird.setAttribute('position', '-2 0 -5');
+
+      gameRunning = true;
+      birdVelocity = 0;
+      gameLoop();
     }
 
     // Start the game loop
